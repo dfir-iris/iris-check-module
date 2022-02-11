@@ -17,23 +17,21 @@
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import logging
-from virus_total_apis import PublicApi, PrivateApi
 
 from iris_interface.IrisModuleInterface import IrisPipelineTypes, IrisModuleInterface, IrisModuleTypes
 import iris_interface.IrisInterfaceStatus as InterfaceStatus
 
-from iris_vt_module.vt_handler.vt_handler import VtHandler
+import iris_check_module.IrisCheckConfig as interface_conf
 
-import iris_vt_module.IrisVTConfig as interface_conf
+from app.datamgmt.modules_db import module_list_available_hooks
 
-log = logging.getLogger('iris_vt_module')
+log = logging.getLogger('iris_check_module')
 
 
-class IrisVTInterface(IrisModuleInterface):
+class IrisCheckInterface(IrisModuleInterface):
     """
-    Provide the interface between Iris and VT
+    Main class of IrisCheck Module
     """
-    name = "IrisVTInterface"
     _module_name = interface_conf.module_name
     _module_description = interface_conf.module_description
     _interface_version = interface_conf.interface_version
@@ -50,79 +48,29 @@ class IrisVTInterface(IrisModuleInterface):
         :param module_id: Module ID provided by IRIS
         :return: Nothing
         """
-        status = self.register_to_hook(module_id, iris_hook_name='on_postload_ioc_create')
-        if status.is_failure():
-            log.error(status.get_message())
-            log.error(status.get_data())
+        hooks = [hook.hook_name for hook in module_list_available_hooks]
 
-        else:
-            log.info("Successfully registered on_postload_ioc_create hook")
+        for hook in hooks:
+            status = self.register_to_hook(module_id, iris_hook_name=hook)
+            if status.is_failure():
+                log.error(status.get_message())
+                log.error(status.get_data())
 
-        self.register_to_hook(module_id, iris_hook_name='on_postload_ioc_update')
-        if status.is_failure():
-            log.error(status.get_message())
-            log.error(status.get_data())
-
-        else:
-            log.info("Successfully registered on_postload_ioc_update hook")
-
-        self.register_to_hook(module_id, iris_hook_name='on_preload_ioc_update')
-        if status.is_failure():
-            log.error(status.get_message())
-            log.error(status.get_data())
-
-        else:
-            log.info("Successfully registered on_preload_ioc_update hook")
+            else:
+                log.info(f"Successfully registered hook {hook}")
 
     def hooks_handler(self, hook_name: str, data):
         """
-        Hooks handler table. Calls corresponding methods depending on the hooks name.
+        Hooks handler table. Simply log the call if the setting tells us to do so.
 
         :param hook_name: Name of the hook which triggered
         :param data: Data associated with the trigger.
-        :return: Data
+        :return: IIStatus
         """
         log.addHandler(self.set_log_handler())
 
-        log.info(f'Received {hook_name}')
-        if hook_name == 'on_postload_ioc_create':
-            status = self._handle_ioc(data=data)
+        if self.mod_config.get('check_log_received_hook') is True:
+            log.info(f'Received {hook_name}')
+            log.info(f'Received data of type {type(data)}')
 
-        elif hook_name == "on_postload_ioc_update":
-            status = self._handle_ioc(data=data)
-
-        elif hook_name == "on_manual_trigger_ioc":
-            status = self._handle_ioc(data=data)
-
-        else:
-            log.critical(f'Received unsupported hook {hook_name}')
-            return InterfaceStatus.I2Error(data=data, logs=list(self.message_queue))
-
-        if status.is_failure():
-            log.error(f"Encountered error processing hook {hook_name}")
-            return InterfaceStatus.I2Error(data=data, logs=list(self.message_queue))
-
-        log.info(f"Successfully processed hook {hook_name}")
         return InterfaceStatus.I2Success(data=data, logs=list(self.message_queue))
-
-    def _handle_ioc(self, data) -> InterfaceStatus.IIStatus:
-        """
-        Handle the IOC data the module just received. The module registered
-        to on_postload hooks, so it receives instances of IOC object.
-        These objects are attached to a dedicated SQlAlchemy session so data can
-        be modified safely.
-
-        :param data: Data associated to the hook, here IOC object
-        :return: IIStatus
-        """
-        vt_handler = VtHandler(mod_config=self._dict_conf)
-        # Check that the IOC we receive is of type the module can handle and dispatch
-        if 'ip-' in data.ioc_type.type_name:
-            return vt_handler.handle_vt_ip(ioc=data)
-
-        elif 'domain' in data.ioc_type.type_name:
-            return vt_handler.handle_vt_domain(ioc=data)
-
-        log.error(f'IOC type {data.ioc_type.type_name} not handled by VT module. Skipping')
-        return InterfaceStatus.I2Success(data=data)
-

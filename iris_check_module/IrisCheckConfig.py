@@ -18,8 +18,8 @@
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-module_name = "IrisVT"
-module_description = "Provides an interface between VT and IRIS"
+module_name = "IrisCheck"
+module_description = "Provides a simple check module that replies to every hooks"
 interface_version = 1.1
 module_version = 1.0
 pipeline_support = False
@@ -27,42 +27,10 @@ pipeline_info = {}
 
 module_configuration = [
     {
-        "param_name": "vt_api_key",
-        "param_human_name": "VT API Key",
-        "param_description": "API key to use to communicate with VT",
-        "default": None,
-        "mandatory": True,
-        "type": "sensitive_string"
-    },
-    {
-        "param_name": "vt_key_is_premium",
-        "param_human_name": "VT Key is premium",
-        "param_description": "Set to True if the VT key is premium",
-        "default": False,
-        "mandatory": True,
-        "type": "bool"
-    },
-    {
-        "param_name": "vt_ip_assign_asn_as_tag",
-        "param_human_name": "Assign ASN tag to IP",
-        "param_description": "Assign a new tag to IOC IPs with the ASN fetched from VT",
+        "param_name": "check_log_received_hook",
+        "param_human_name": "Log received hook",
+        "param_description": "Logs every hook received if set to true. Otherwise do nothing.",
         "default": True,
-        "mandatory": True,
-        "type": "bool"
-    },
-    {
-        "param_name": "vt_domain_add_whois_as_desc",
-        "param_human_name": "Add domain whois information",
-        "param_description": "Add whois information into the description of IOCs of type domain",
-        "default": True,
-        "mandatory": True,
-        "type": "bool"
-    },
-    {
-        "param_name": "vt_domain_add_subdomain_as_desc",
-        "param_human_name": "Add subdomains in IOC description",
-        "param_description": "Add subdomains information into the description of IOCs of type domain",
-        "default": False,
         "mandatory": True,
         "type": "bool"
     }
