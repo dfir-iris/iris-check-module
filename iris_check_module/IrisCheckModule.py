@@ -23,12 +23,12 @@ import iris_interface.IrisInterfaceStatus as InterfaceStatus
 
 import iris_check_module.IrisCheckConfig as interface_conf
 
-from app.datamgmt.modules_db import module_list_available_hooks
+from app.datamgmt.iris_engine.modules_db import module_list_available_hooks
 
 log = logging.getLogger('iris_check_module')
 
 
-class IrisCheckInterface(IrisModuleInterface):
+class IrisCheckModule(IrisModuleInterface):
     """
     Main class of IrisCheck Module
     """
@@ -48,7 +48,7 @@ class IrisCheckInterface(IrisModuleInterface):
         :param module_id: Module ID provided by IRIS
         :return: Nothing
         """
-        hooks = [hook.hook_name for hook in module_list_available_hooks]
+        hooks = [hook.hook_name for hook in module_list_available_hooks()]
 
         for hook in hooks:
             status = self.register_to_hook(module_id, iris_hook_name=hook)
@@ -69,7 +69,7 @@ class IrisCheckInterface(IrisModuleInterface):
         """
         log.addHandler(self.set_log_handler())
 
-        if self.mod_config.get('check_log_received_hook') is True:
+        if self._dict_conf.get('check_log_received_hook') is True:
             log.info(f'Received {hook_name}')
             log.info(f'Received data of type {type(data)}')
 
