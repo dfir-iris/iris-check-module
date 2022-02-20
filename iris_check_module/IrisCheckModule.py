@@ -16,16 +16,12 @@
 #  You should have received a copy of the GNU Lesser General Public License
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import logging
-
 from iris_interface.IrisModuleInterface import IrisPipelineTypes, IrisModuleInterface, IrisModuleTypes
 import iris_interface.IrisInterfaceStatus as InterfaceStatus
 
 import iris_check_module.IrisCheckConfig as interface_conf
 
 from app.datamgmt.iris_engine.modules_db import module_list_available_hooks
-
-log = logging.getLogger('iris_check_module')
 
 
 class IrisCheckModule(IrisModuleInterface):
@@ -53,11 +49,11 @@ class IrisCheckModule(IrisModuleInterface):
         for hook in hooks:
             status = self.register_to_hook(module_id, iris_hook_name=hook)
             if status.is_failure():
-                log.error(status.get_message())
-                log.error(status.get_data())
+                self.log.error(status.get_message())
+                self.log.error(status.get_data())
 
             else:
-                log.info(f"Successfully registered hook {hook}")
+                self.log.info(f"Successfully subscribed to {hook} hook")
 
     def hooks_handler(self, hook_name: str, data):
         """
@@ -67,10 +63,9 @@ class IrisCheckModule(IrisModuleInterface):
         :param data: Data associated with the trigger.
         :return: IIStatus
         """
-        log.addHandler(self.set_log_handler())
 
         if self._dict_conf.get('check_log_received_hook') is True:
-            log.info(f'Received {hook_name}')
-            log.info(f'Received data of type {type(data)}')
+            self.log.info(f'Received {hook_name}')
+            self.log.info(f'Received data of type {type(data)}')
 
         return InterfaceStatus.I2Success(data=data, logs=list(self.message_queue))
