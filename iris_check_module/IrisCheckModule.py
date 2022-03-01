@@ -55,17 +55,18 @@ class IrisCheckModule(IrisModuleInterface):
             else:
                 self.log.info(f"Successfully subscribed to {hook} hook")
 
-    def hooks_handler(self, hook_name: str, data):
+    def hooks_handler(self, hook_name: str, hook_ui_name: str, data: any):
         """
         Hooks handler table. Simply log the call if the setting tells us to do so.
 
         :param hook_name: Name of the hook which triggered
+        :param hook_ui_name: Name of the ui hook
         :param data: Data associated with the trigger.
         :return: IIStatus
         """
 
         if self._dict_conf.get('check_log_received_hook') is True:
-            self.log.info(f'Received {hook_name}')
-            self.log.info(f'Received data of type {type(data)}')
+            self.log.info(f'Received {hook_name} :: {hook_ui_name}')
+            self.log.info(f'Received data of type {type(data[0])}')
 
         return InterfaceStatus.I2Success(data=data, logs=list(self.message_queue))
