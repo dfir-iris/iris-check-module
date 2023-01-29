@@ -20,8 +20,8 @@
 
 module_name = "IrisCheck"
 module_description = "Provides a simple check module that replies to every hooks"
-interface_version = 1.1
-module_version = 1.0
+interface_version = "1.2.0"
+module_version = "1.0.1"
 pipeline_support = False
 pipeline_info = {}
 

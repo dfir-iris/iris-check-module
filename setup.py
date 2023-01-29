@@ -24,7 +24,7 @@ import setuptools
 
 setuptools.setup(
      name='iris_check_module',
-     version='0.1',
+     version='1.0.1',
      packages=['iris_check_module'],
      author="DFIR-IRIS",
      author_email="contact@dfir-iris.org",
